@@ -1,0 +1,41 @@
+---
+# Title: role-postfix
+#
+# Author: bitfinity-nl
+# File: defaults/main.yml
+#
+# Description:
+#   Send mail via 587 
+
+# -- saslauthd --
+#
+# Variable(s):
+#   pf_ldap_server      : 'ldap://domaincontroller.example.com/'                # Set LDAP/AD server.
+#   pf_ldap_search_base : 'cn=Users,dc=domain,dc=example,dc=com'                # Set the search basedn.
+#   pf_ldap_filter      : '(userPrincipalName=%u@domain.example.com)'           # Set the ldap filter.
+#   pf_ldap_binddn      : 'cn=lookupuser,cn=Users,dc=domain,dc=example,dc=com'  # Set lookup user (minimal rights).
+#   pf_ldap_password    : 'password'                                            # Set lookup user (password).
+#
+# Comment: 
+#   Set def_ variable(s) into group_vars or override them into your playbook.
+#
+pf_ldap_server      : 'ldap://{{ def_ad }}/'
+pf_ldap_search_base : ''
+pf_ldap_filter      : '(userPrincipalName=%u@domain.example.com)'
+pf_ldap_binddn      : 'cn=lookupuser,cn=Users,dc=domain,dc=example,dc=com'
+pf_ldap_password    : ''
+
+
+# -- Postfix - main.cf --
+#
+# Variable(s):
+#   pf_main_tls_cert_file : '/etc/ssl/certs/mycert.crt'          #
+#   pf_main_tls_key_file  : '/etc/ssl/private/mycert.key'        #
+#   pf_main_tls_ca_file   : '/etc/ssl/certs/myintermediate.crt'  #
+#
+# Comment: 
+#   Set def_ variable(s) into group_vars or override them into your playbook.
+#
+pf_main_tls_cert_file : ''
+pf_main_tls_key_file  : ''
+pf_main_tls_ca_file   : ''

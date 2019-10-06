@@ -1,0 +1,9 @@
+smtpd_tls_cert_file= {{ pf_main_tls_cert_file }}
+smtpd_tls_key_file= {{ pf_main_tls_key_file }}
+smtpd_tls_CAfile = {{ pf_main_tls_ca_file }}
+smtpd_use_tls=yes
+smtpd_sasl_auth_enable = yes
+broken_sasl_auth_clients = yes
+smtpd_recipient_restrictions = permit_mynetworks,
+  permit_sasl_authenticated,
+  reject_unauth_destination
