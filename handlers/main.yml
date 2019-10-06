@@ -1,0 +1,18 @@
+---
+# Title: role-postfix
+#
+# Author: bitfinity-nl
+# File: handlers/main.yml
+#
+# Description:
+#   Send mail via 587 
+
+- name: "restart_saslauthd"
+  systemd:
+    name: saslauthd
+    state: restarted
+
+- name: "restart_postfix
+  systemd:
+    name: postfix
+    state:restarted
