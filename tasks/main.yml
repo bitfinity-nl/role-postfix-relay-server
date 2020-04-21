@@ -1,54 +1,15 @@
 ---
-# Title: role-postfix
+# Title: role-postfix-relay-server
 #
 # Author: bitfinity-nl
 # File: defaults/main.yml
 #
 # Description:
-#   Send mail via 587 
+#   Send mail via 587 or 465
 #
-# Source(s):
-#   - https://tech.sid3windr.be/2014/04/setting-up-a-postfix-smtp-relay-with-active-directory-authentication/
 
-- name: "Install applications"
-  apt:
-    name: "{{ packages }}"
-    state: present
-    update_cache: yes
-  vars:
-    packages:
-#    - mailutils
-    - postfix
-    - sasl2-bin
-    - libsasl2-modules
-
-- name: "Create additional directories"
-  file:
-    path: "{{ item }}"
-    state: present
-  with_items:
-    - /etc/postfix/sasl
-
-- name: "Transfer files to /etc/postfix/" 
-  template:
-    src: "{{ item.src }}"  
-    dest: "{{ item.dest }}"
-    backup: yes
-  with_items:
-    - { src: 'postfix/main.cf.j2', dest: '/etc/postfix/main.cf', desc: '' }
-    - { src: 'postfix/smtpd.conf.j2', dest: '/etc/postfix/sasl/smtpd.conf', desc: 'Set Postfix up to use saslauthd as authentication mechanism.' }
-#    - { src: 'postfix/master.cf.j2'}
-    - { src: 'sasl2authd/saslauthd.j2', dest: '/etc/default/saslauthd', desc: 'Saslauthd' }
-
-- name: "Add user postfix to sasl group, to be able to access the saslauthd communication socket"
-  user:
-    name: postfix
-    groups: sasl
-    append: yes
-
-- name: "Restart postfix"
-  systemd:
-    name: postfix
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
+- name: "Generate certificate"
+  import_tasks: ubt-1804-amd64.yml
+  when:
+    - ansible_distribution_version == "18.04"
+    - ansible_architecture == "x86_64"

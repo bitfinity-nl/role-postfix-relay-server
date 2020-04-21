@@ -1,11 +1,23 @@
 ---
-# Title: role-postfix
+# Title: role-postfix-relay-server
 #
 # Author: bitfinity-nl
 # File: defaults/main.yml
 #
 # Description:
-#   Send mail via 587 
+#   Send mail via 587 or 465
+#
+#   U can test saslauthd with the following command: testsaslauthd -u administrator -p <password>
+#
+# Source(s):
+#   - https://tech.sid3windr.be/2014/04/setting-up-a-postfix-smtp-relay-with-active-directory-authentication/
+#   - https://nfolamp.wordpress.com/2013/02/04/fixing-postfix-and-saslauthd-cannot-connect-to-saslauthd/
+#
+# Requirements:
+#   - User must be member of securitygroup "app_postfix". 
+#   - Create useraccount "svc_postfix" for reading ldap/active directory.
+#
+
 
 # -- saslauthd --
 #
@@ -19,23 +31,39 @@
 # Comment: 
 #   Set def_ variable(s) into group_vars or override them into your playbook.
 #
-pf_ldap_server      : 'ldap://{{ def_ad }}/'
-pf_ldap_search_base : ''
-pf_ldap_filter      : '(userPrincipalName=%u@domain.example.com)'
-pf_ldap_binddn      : 'cn=lookupuser,cn=Users,dc=domain,dc=example,dc=com'
-pf_ldap_password    : ''
+#   testsaslauthd -u administrator -p <password>
+#
+# CN=svc_postfix,OU=Service Accounts,OU=VEG - Users,OU=Vissers Olie,DC=Vissersolie,DC=local
+#
+pf_ldap_server      : 'ldap://{{ def_ad_dc01 }}/'
+pf_ldap_search_base : '{{ def_ad_search }}'
+pf_ldap_filter      : '(&(MemberOf=cn=app_postfix,ou=Applications,ou=resources,{{ def_ad_search }})(|(&(userPrincipalName=%u)(objectClass=person))(sAMAccountName=%u)(mail=%u)))'
+pf_ldap_binddn      : 'cn=svc_postfix,ou=Service Accounts,ou=Users,{{ def_ad_search }}'
+pf_ldap_password    : 'password'
 
 
 # -- Postfix - main.cf --
 #
 # Variable(s):
-#   pf_main_tls_cert_file : '/etc/ssl/certs/mycert.crt'          #
-#   pf_main_tls_key_file  : '/etc/ssl/private/mycert.key'        #
-#   pf_main_tls_ca_file   : '/etc/ssl/certs/myintermediate.crt'  #
+#   pf_main_tls_cert_file : '/etc/ssl/certs/mailcert.pem'        
+#   pf_main_tls_key_file  : '/etc/ssl/certs/mailcert.pem'        
+#   pf_main_tls_ca_file   : '/etc/ssl/certs/myintermediate.crt'  
 #
 # Comment: 
 #   Set def_ variable(s) into group_vars or override them into your playbook.
 #
-pf_main_tls_cert_file : ''
-pf_main_tls_key_file  : ''
-pf_main_tls_ca_file   : ''
+pf_main_tls_hostname  : 'smtp.bitinfinity.net'
+pf_main_tls_cert_file : '{{ def_cert_out }}'
+pf_main_tls_key_file  : '{{ def_cert_keyout }}'
+pf_main_tls_ca_file   : '{{ def_cert_chain }}'
+
+
+# -- Postfix: Relay to another server --
+#
+# Variable(s):
+#   pf_relay_state : 'disabled'        # Enable or disable relayhost (enabled or disabled).  
+#   pf_relayhost   : '192.168.0.8:26'  # Set IP (or hostname) with portnummer.
+#
+pf_relay_state : 'disabled' 
+pf_relayhost   : '192.168.0.1:26'
+
