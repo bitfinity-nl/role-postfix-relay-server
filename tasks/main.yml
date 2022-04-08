@@ -1,15 +1,26 @@
 ---
 # Title: role-postfix-relay-server
 #
-# Author: bitfinity-nl
+# Author: Bitfinity-nl / L. Rutten
 # File: defaults/main.yml
 #
 # Description:
-#   Send mail via 587 or 465
+#   This task file contains the tasks to install and
+#   configure a postfix relay server. Mails can be
+#   send mail via port 587/tcp or 465/tcp.
+#
+# Testing:
+#   testsaslauthd -u administrator -p <password>
 #
 
-- name: "Generate certificate"
+- name: "Tasks for Ubuntu 18.04LTS AMD64"
   import_tasks: ubt-1804-amd64.yml
   when:
     - ansible_distribution_version == "18.04"
+    - ansible_architecture == "x86_64"
+
+- name: "Tasks for Ubuntu 18.04LTS AMD64"
+  import_tasks: ubt-2004-amd64.yml
+  when:
+    - ansible_distribution_version == "20.04"
     - ansible_architecture == "x86_64"
