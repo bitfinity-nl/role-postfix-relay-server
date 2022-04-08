@@ -1,8 +1,8 @@
 ---
 # Title: role-postfix-relay-server
 #
-# Author: bitfinity-nl
-# File: tasks/ubt-1804-make-ssl-cert.yml
+# Author: Bitfinity / L. Rutten
+# File: tasks/ubt-1804-amd64.yml
 #
 # Description:
 #   This task file contains the tasks to install and
