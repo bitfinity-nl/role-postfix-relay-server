@@ -5,9 +5,12 @@
 # File: tasks/ubt-1804-make-ssl-cert.yml
 #
 # Description:
-#   Send mail via 587 or 465
+#   This task file contains the tasks to install and
+#   configure a postfix relay server. Mails can be
+#   send mail via port 587/tcp or 465/tcp.
 #
-#  testsaslauthd -u administrator -p <password>
+# Testing:
+#   testsaslauthd -u administrator -p <password>
 #
 
 - name: "Install packages"
