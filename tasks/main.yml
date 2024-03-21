@@ -22,5 +22,11 @@
 - name: "Tasks for Ubuntu 20.04LTS AMD64"
   import_tasks: ubt-2004-amd64.yml
   when:
-    - ansible_distribution_version == "20.04" or  ansible_distribution_version == "22.04"
+    - ansible_distribution_version == "20.04"
+    - ansible_architecture == "x86_64"
+
+- name: "Tasks for Ubuntu 22.04LTS AMD64"
+  import_tasks: ubt-2004-amd64.yml
+  when:
+    - ansible_distribution_version == "22.04"
     - ansible_architecture == "x86_64"
