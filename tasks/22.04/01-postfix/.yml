@@ -2,7 +2,8 @@
 # Title: role-postfix-relay-server
 #
 # Author: Bitfinity / L. Rutten
-# File: tasks/ubt-2004-amd64.yml
+#
+# File: tasks/22.04/01-postfix.yml
 #
 # Description:
 #   This task file contains the tasks to install and
@@ -13,22 +14,19 @@
 #   testsaslauthd -u administrator -p <password>
 #
 - name: "Install packages"
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - debconf-utils
-      - libsasl2-modules
-      - postfix
-      - python3-openssl
-      - sasl2-bin
+  ansible.builtin.apt:
+    pkg:
+    - debconf-utils
+    - libsasl2-modules
+    - postfix
+    - python3-openssl
+    - sasl2-bin    
 
 - name: Ensure directory exists for local self-signed TLS certs.
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-  with_items:
+  loop:
     - /opt/ansible/ssl/selfsigned/live/{{ ansible_hostname }}
     - /etc/postfix/sasl
 
@@ -50,14 +48,14 @@
     provider: selfsigned
 
 - name: "Transfer templates"
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"    
     mode: "{{ item.mode }}"
     backup: yes
-  with_items:
+  loop:
     - { src: 'sasl2authd/saslauthd.j2', dest: '/etc/default/saslauthd', owner: 'root', group: 'root', mode: '0644', 
         desc: 'This file sets the SASL auth daemon (saslauthd) up to use LDAP authentication' }
     - { src: 'sasl2authd/saslauthd.conf.j2', dest: '/etc/saslauthd.conf', owner: 'root', group: 'root', mode: '0644',
@@ -71,7 +69,7 @@
     - restart_postfix
 
 - name: "Enable encryption on port 587 (submission, STARTTLS) and 465 (SSL)"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/master.cf
     marker: "# <!-- {mark} ANSIBLE MANAGED BLOCK -->"
     insertafter: "#submission inet n.*"
@@ -87,7 +85,7 @@
     - restart_postfix
 
 - name: "Ensure spool direcoty exists /var/spool/postfix/var/run/saslauthd"
-  file:
+  ansible.builtin.file:
     path: /var/spool/postfix/var/run/saslauthd
     owner: root
     group: sasl
@@ -95,29 +93,29 @@
     state: directory
 
 - name: "Remove directory /var/run/saslauthd"
-  file:
+  ansible.builtin.file:
     path: /var/run/saslauthd
     state: absent
 
 - name: "start saslauthd"
-  systemd:
+  ansible.builtin.systemd:
     name: saslauthd
     state: started
 
 - name: "Create symlink from /var/spool/postfix/var/run/saslauthd to /var/run/saslauthd"
-  file:
+  ansible.builtin.file:
     src: /var/spool/postfix/var/run/saslauthd
     dest: /var/run/saslauthd
     state: link
 
 - name: "Add user postfix to sasl group, to be able to access the saslauthd communication socket"
-  user:
+  ansible.builtin.user:
     name: postfix
     groups: sasl
     append: yes
 
 - name: "Enable to relayhost"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# <!-- {mark} ANSIBLE MANAGED BLOCK -->"
     block: |
@@ -130,7 +128,7 @@
     - restart_postfix
 
 - name: "Disable to relayhost"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "# <!-- {mark} ANSIBLE MANAGED BLOCK -->"
     block: |
@@ -143,7 +141,7 @@
     - restart_postfix
 
 - name: "Configure UFW for postfix"
-  ufw:
+  community.general.ufw:
     rule: allow
     name: Postfix
     delete: yes
