@@ -21,7 +21,7 @@
       - debconf-utils
       - libsasl2-modules
       - postfix
-      - python-openssl
+      - python3-openssl
       - sasl2-bin
 
 - name: Ensure directory exists for local self-signed TLS certs.
