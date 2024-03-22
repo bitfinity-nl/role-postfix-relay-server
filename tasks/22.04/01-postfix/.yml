@@ -5,7 +5,7 @@
 #
 # File: tasks/22.04/01-postfix.yml
 #
-# Description:.
+# Description:
 #   This task file contains the tasks to install and
 #   configure a postfix relay server. Mails can be
 #   send mail via port 587/tcp or 465/tcp.
