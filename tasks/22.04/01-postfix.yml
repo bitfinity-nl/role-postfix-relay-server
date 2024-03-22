@@ -145,3 +145,9 @@
     rule: allow
     name: Postfix
     delete: yes
+
+- name: "Configure opendkim for postfix"
+  import_tasks: 02-opendkim.yml
+  when:
+    - ansible_distribution_version == "22.04"
+    - ansible_architecture == "x86_64"
