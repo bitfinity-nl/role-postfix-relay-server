@@ -25,9 +25,7 @@
     - ansible_architecture == "x86_64"
 
 - name: "Tasks for Ubuntu 22.04LTS AMD64"
-  import_tasks: "{{ item }}"
-  loop:
-    - 22.04/01-postfix.yml
+  import_tasks: 22.04/01-postfix.yml
   when:
     - ansible_distribution_version == "22.04"
     - ansible_architecture == "x86_64"
