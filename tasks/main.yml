@@ -12,7 +12,6 @@
 # Testing:
 #   testsaslauthd -u administrator -p <password>
 #
-
 - name: "Tasks for Ubuntu 18.04LTS AMD64"
   import_tasks: ubt-1804-amd64.yml
   when:
