@@ -3,10 +3,10 @@ Postfix-based relay server with user authentication via Active Directory or LDAP
 
 ## Check
 
-- Rerverse DNS: 
-- SPF: 
-- DMARC: 
-- DKIM: https://dmarcadvisor.com/nl/dkim-check/
+- SPF: https://mxtoolbox.com/spf.aspx
+- DMARC: https://mxtoolbox.com/dmarc.aspx
+- DKIM: https://dmarcadvisor.com/nl/dkim-check
+- Rerverse DNS: https://mxtoolbox.com/ReverseLookup.aspx
 
 ## Source(s)
 
