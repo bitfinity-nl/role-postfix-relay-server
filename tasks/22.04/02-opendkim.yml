@@ -17,7 +17,7 @@
     - opendkim-tools
 
 - name: "Configure /etc/postfix/main.cf for DKIM"
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK - DKIM -->"
     block: |
@@ -27,14 +27,14 @@
       non_smtpd_milters = inet:localhost:8891
 
 - name: "Configure /etc/postfix/main.cf for warning NIS Domain not set " 
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf
     marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK - Warning NIS Domain not set -->"
     block: |
       alias_maps = hash:/etc/aliases
 
 - name: "Configure /etc/opendkim.conf" 
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/opendkim.conf
     marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK - DKIM -->"
     block: |
