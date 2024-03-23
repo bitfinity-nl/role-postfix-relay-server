@@ -1,0 +1,25 @@
+---
+# Title: role-postfix-relay-server
+#
+# Author: Bitfinity / L. Rutten
+#
+# File: tasks/22.04/03-security.yml
+#
+# Description:.
+#   This task file configures DKIM for Postfix.
+# 
+# Note: Copy the public key (cat /etc/postfix/dkim.key) to your DNS server.
+#
+- name: "Configure UFW to Allow (rate limit) for Apache OpenSSH,Postix"
+  community.general.ufw:
+    state: enabled
+    rule: limit
+    name: "{{ item }}"
+  loop:
+    - Apache
+    - Apache Full
+    - Apache Secure
+    - OpenSSH
+    - Postfix
+    - Postfix SMTPS
+    - Postfix Submission
