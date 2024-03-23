@@ -42,6 +42,12 @@
       KeyFile /etc/postfix/dkim.key
       Selector dkim
 
+- name: "Configure /etc/opendkim.conf - Set opendkim to sv mode"
+  ansible.builtin.lineinfile:
+    path: /etc/opendkim.conf
+    regexp: '^#Mode.*sv'
+    line: Mode                   sv
+    
 - name: "Configure /etc/opendkim.conf - Socket part1"
   ansible.builtin.lineinfile:
     path: /etc/opendkim.conf
