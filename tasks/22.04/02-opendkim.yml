@@ -1,4 +1,14 @@
 ---
+# Title: role-postfix-relay-server
+#
+# Author: Bitfinity / L. Rutten
+#
+# File: tasks/22.04/02-opendkim.yml
+#
+# Description:.
+#   This task file configures DKIM for Postfix.
+# 
+# Note: Copy the public key (cat /etc/postfix/dkim.key) to your DNS server.
 #
 - name: "Install APT packages"
   ansible.builtin.apt:
