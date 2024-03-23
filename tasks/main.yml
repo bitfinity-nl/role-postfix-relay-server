@@ -13,13 +13,13 @@
 #   testsaslauthd -u administrator -p <password>
 #
 - name: "Tasks for Ubuntu 18.04LTS AMD64"
-  import_tasks: ubt-1804-amd64.yml
+  import_tasks: 18.04/ubt-1804-amd64.yml
   when:
     - ansible_distribution_version == "18.04"
     - ansible_architecture == "x86_64"
 
 - name: "Tasks for Ubuntu 20.04LTS AMD64"
-  import_tasks: ubt-2004-amd64.yml
+  import_tasks: 20.04/ubt-2004-amd64.yml
   when:
     - ansible_distribution_version == "20.04"
     - ansible_architecture == "x86_64"
