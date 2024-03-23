@@ -1,0 +1,22 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: role-postfix-relay-server
+  author: Bitfinity / L. Rutten
+  description: Postfix relay server with LDAP authentication
+  company: "Bitfinity"
+  license: "license (BSD, MIT)"
+  min_ansible_version: 2.10
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 22.04
+        - 20.04
+        - 18.04
+  galaxy_tags:
+    - mail
+    - postfix
+    - relay
+    - smarthost
+    - ubuntu
