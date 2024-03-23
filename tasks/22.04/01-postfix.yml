@@ -148,6 +148,6 @@
 
 - name: "Configure opendkim for postfix"
   import_tasks: 02-opendkim.yml
-  when:
-    - ansible_distribution_version == "22.04"
-    - ansible_architecture == "x86_64"
+
+- name: "Configure security for postfix"
+  import_tasks: 03-security.yml
