@@ -18,6 +18,7 @@
 #   - Create useraccount "svc_postfix" for reading ldap/active directory.
 #
 
+pf_reverse_dns_domain_name: 'smtp.example.nl'
 
 # -- saslauthd --
 #
@@ -52,7 +53,7 @@ pf_ldap_password    : 'password'
 # Comment: 
 #   Set def_ variable(s) into group_vars or override them into your playbook.
 #
-pf_main_tls_hostname  : 'smtp.bitinfinity.net'
+pf_main_tls_hostname  : 'smtp.example.net'
 pf_main_tls_cert_file : '{{ def_cert_out }}'
 pf_main_tls_key_file  : '{{ def_cert_keyout }}'
 pf_main_tls_ca_file   : '{{ def_cert_chain }}'
