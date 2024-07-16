@@ -2,3 +2,10 @@ START=yes
 MECHANISMS="ldap"
 OPTIONS="-c -m /var/spool/postfix/var/run/saslauthd"
 NAME=Mailserver
+
+OPTIONS="-c -m /var/spool/postfix/var/run/saslauthd -r"
+
+THREADS=5
+
+OPTIONS="-c -m /var/spool/postfix/var/run/saslauthd -r"
+PARAMS="-m /var/spool/postfix/var/run/saslauthd -r"
