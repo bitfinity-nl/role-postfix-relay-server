@@ -1,0 +1,90 @@
+---
+# Title: role-postfix-relay-server
+#
+# Author: Bitfinity / L. Rutten
+#
+# File: tasks/24.04/02-opendkim.yml
+#
+# Description:.
+#   This task file configures DKIM for Postfix.
+# 
+# Note: Copy the public key (cat /etc/postfix/dkim.key) to your DNS server.
+#
+- name: "Install APT packages"
+  ansible.builtin.apt:
+    pkg:
+    - opendkim
+    - opendkim-tools
+
+- name: "Configure /etc/postfix/main.cf for DKIM"
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/main.cf
+    marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK - DKIM -->"
+    block: |
+      milter_protocol = 6
+      milter_default_action = accept
+      smtpd_milters = inet:localhost:8891
+      non_smtpd_milters = inet:localhost:8891
+
+- name: "Configure /etc/postfix/main.cf for warning NIS Domain not set " 
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/main.cf
+    marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK - Warning NIS Domain not set -->"
+    block: |
+      alias_maps = hash:/etc/aliases
+
+- name: "Configure /etc/opendkim.conf" 
+  ansible.builtin.blockinfile:
+    path: /etc/opendkim.conf
+    marker: "#<!-- {mark} ANSIBLE MANAGED BLOCK - DKIM -->"
+    block: |
+      Domain bitfinity.nl
+      KeyFile /etc/postfix/dkim.key
+      Selector dkim
+
+- name: "Configure /etc/opendkim.conf - Set opendkim to sv mode"
+  ansible.builtin.lineinfile:
+    path: /etc/opendkim.conf
+    regexp: '^#Mode.*sv'
+    line: Mode                   sv
+    
+- name: "Configure /etc/opendkim.conf - Socket part1"
+  ansible.builtin.lineinfile:
+    path: /etc/opendkim.conf
+    regexp: '^#Socket.*inet:8892@localhost'
+    line: Socket                  inet:8891@127.0.0.1
+
+- name: "Configure /etc/opendkim.conf - Socket part2"
+  ansible.builtin.lineinfile:
+    path: /etc/opendkim.conf
+    regexp: '^Socket.*local:\/run\/opendkim\/opendkim.sock'
+    line: '#Socket                  local:/run/opendkim/opendkim.sock'
+
+- name: "Configure /etc/default/opendkim"
+  ansible.builtin.lineinfile:
+    path: /etc/default/opendkim
+    regexp: '^SOCKET=local:\$RUNDIR\/opendkim\.sock'
+    line: 'SOCKET="inet:8891@127.0.0.1"'
+
+- name: "Configure /lib/systemd/system/opendkim.service"
+  ansible.builtin.lineinfile:
+    path: /lib/systemd/system/opendkim.service
+    regexp: '^ExecStart=\/usr\/sbin\/opendkim -x \/etc\/opendkim\.conf'
+    line: 'ExecStart=/usr/sbin/opendkim -P /var/run/opendkim/opendkim.pid -p inet:8891@127.0.0.1'
+
+- name: "Generate private key and dns record"
+  ansible.builtin.shell: opendkim-genkey -t -s dkim -d bitfinity.nl
+  args:
+    chdir: /etc/postfix/
+
+- name: "change /etc/postfix/dkim.private to /etc/postfix/dkim.key"
+  ansible.builtin.shell: mv dkim.private dkim.key
+  args:
+     chdir: /etc/postfix/
+
+- name: "Correct permissions on file"
+  ansible.builtin.file:
+     path: /etc/postfix/dkim.key
+     owner: root
+     group: opendkim
+     mode: '0650'
