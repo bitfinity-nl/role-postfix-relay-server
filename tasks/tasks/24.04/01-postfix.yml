@@ -1,0 +1,153 @@
+---
+# Title: role-postfix-relay-server
+#
+# Author: Bitfinity / L. Rutten
+#
+# File: tasks/24.04/01-postfix.yml
+#
+# Description:.
+#   This task file contains the tasks to install and
+#   configure a postfix relay server. Mails can be
+#   send mail via port 587/tcp or 465/tcp.
+#
+# Testing:
+#   testsaslauthd -u administrator -p <password>
+#
+- name: "Install packages"
+  ansible.builtin.apt:
+    pkg:
+    - debconf-utils
+    - libsasl2-modules
+    - postfix
+    - python3-openssl
+    - sasl2-bin    
+
+- name: Ensure directory exists for local self-signed TLS certs.
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /opt/ansible/ssl/selfsigned/live/{{ ansible_hostname }}
+    - /etc/postfix/sasl
+
+- name: Generate an OpenSSL private key.
+  openssl_privatekey:
+    path: /opt/ansible/ssl/selfsigned/live/{{ ansible_hostname }}/privkey.pem
+
+- name: Generate an OpenSSL CSR.
+  openssl_csr:
+    path: /etc/ssl/private/{{ ansible_hostname }}.csr
+    privatekey_path: /opt/ansible/ssl/selfsigned/live/{{ ansible_hostname }}/privkey.pem
+    common_name: "{{ ansible_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate.
+  openssl_certificate:
+    path: /opt/ansible/ssl/selfsigned/live/{{ ansible_hostname }}/fullchain.pem
+    privatekey_path: /opt/ansible/ssl/selfsigned/live/{{ ansible_hostname }}/privkey.pem
+    csr_path: /etc/ssl/private/{{ ansible_hostname }}.csr
+    provider: selfsigned
+
+- name: "Transfer templates"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"    
+    mode: "{{ item.mode }}"
+    backup: yes
+  loop:
+    - { src: 'sasl2authd/saslauthd.j2', dest: '/etc/default/saslauthd', owner: 'root', group: 'root', mode: '0644', 
+        desc: 'This file sets the SASL auth daemon (saslauthd) up to use LDAP authentication' }
+    - { src: 'sasl2authd/saslauthd.conf.j2', dest: '/etc/saslauthd.conf', owner: 'root', group: 'root', mode: '0644',
+        desc: 'This file configures the actual LDAP connection' }
+    - { src: 'postfix/smtpd.conf.j2', dest: '/etc/postfix/sasl/smtpd.conf', owner: 'root', group: 'root', mode: '0644', 
+        desc: 'Setup Postfix to use saslauthd as authentication mechanism.' }
+    - { src: 'postfix/main.cf.j2', dest: '/etc/postfix/main.cf', owner: 'root', group: 'root', mode: '0644',
+        desc: 'Configure postfix' }
+  notify:
+    - restart_saslauthd
+    - restart_postfix
+
+- name: "Enable encryption on port 587 (submission, STARTTLS) and 465 (SSL)"
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/master.cf
+    marker: "# <!-- {mark} ANSIBLE MANAGED BLOCK -->"
+    insertafter: "#submission inet n.*"
+    block: |
+      submission inet n       -       -       -       -       smtpd
+        -o syslog_name=postfix/submission
+        -o smtpd_sasl_auth_enable=yes
+        -o smtpd_tls_auth_only=yes
+      smtps     inet  n       -       -       -       -       smtpd
+        -o syslog_name=postfix/smtps
+        -o smtpd_tls_wrappermode=yes
+  notify:
+    - restart_postfix
+
+- name: "Ensure spool direcoty exists /var/spool/postfix/var/run/saslauthd"
+  ansible.builtin.file:
+    path: /var/spool/postfix/var/run/saslauthd
+    owner: root
+    group: sasl
+    mode: 0710
+    state: directory
+
+- name: "Remove directory /var/run/saslauthd"
+  ansible.builtin.file:
+    path: /var/run/saslauthd
+    state: absent
+
+- name: "start saslauthd"
+  ansible.builtin.systemd:
+    name: saslauthd
+    state: started
+
+- name: "Create symlink from /var/spool/postfix/var/run/saslauthd to /var/run/saslauthd"
+  ansible.builtin.file:
+    src: /var/spool/postfix/var/run/saslauthd
+    dest: /var/run/saslauthd
+    state: link
+
+- name: "Add user postfix to sasl group, to be able to access the saslauthd communication socket"
+  ansible.builtin.user:
+    name: postfix
+    groups: sasl
+    append: yes
+
+- name: "Enable to relayhost"
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/main.cf
+    marker: "# <!-- {mark} ANSIBLE MANAGED BLOCK -->"
+    block: |
+      relayhost = {{ pf_relayhost }}
+    backup: yes
+    state: present
+  when:
+    - pf_relay_state == 'enabled'
+  notify:
+    - restart_postfix
+
+- name: "Disable to relayhost"
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/main.cf
+    marker: "# <!-- {mark} ANSIBLE MANAGED BLOCK -->"
+    block: |
+      relayhost = {{ pf_relayhost }}
+    backup: yes
+    state: absent
+  when:
+    - pf_relay_state == 'disabled'
+  notify:
+    - restart_postfix
+
+- name: "Configure UFW for postfix"
+  community.general.ufw:
+    rule: allow
+    name: Postfix
+    delete: yes
+
+- name: "Configure opendkim for postfix"
+  import_tasks: 02-opendkim.yml
+
+- name: "Configure security for postfix"
+  import_tasks: 03-security.yml
