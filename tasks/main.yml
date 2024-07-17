@@ -31,7 +31,7 @@
     - ansible_architecture == "x86_64"
 
 - name: "Tasks for Ubuntu 24.04LTS AMD64"
-  import_tasks: 22.04/01-postfix.yml
+  import_tasks: 24.04/01-postfix.yml
   when:
     - ansible_distribution_version == "24.04"
     - ansible_architecture == "x86_64"
