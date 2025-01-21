@@ -16,9 +16,9 @@
     rule: limit
     name: "{{ item }}"
   loop:
-    - Apache
-    - Apache Full
-    - Apache Secure
+    #- Apache
+    #- Apache Full
+    #- Apache Secure
     - OpenSSH
     - Postfix
     - Postfix SMTPS
